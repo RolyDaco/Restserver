@@ -4,7 +4,7 @@ const { response, request } = require('express');
 const usuariosGet = (req, res = response) => {
 
     //const query = req.query; Con esto se hace que (http://localhost:8080/api/usuarios?q=hola&nombre=roly&apikey=1234567890) se muestre ordenado.
-   const { q, nombre = 'No name', apikey, page = "1", limit } = req.query;
+   const { q, nombre = 'No name', apikey, page = "1", limit } = req.query;   // tambien se puede usar 1 en page
     res.json({
         msg: 'get API - controlador',
         q,
