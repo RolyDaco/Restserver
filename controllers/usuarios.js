@@ -3,18 +3,35 @@ const bcryptjs = require('bcryptjs')
 
 const Usuario = require('../models/usuario'); //U mayuscula es un standar para poner
 
+const usuariosGet = async(req = request, res = response) => {
+    const { limite = 5, desde = 0 } = req.query; 
+    const query = { estado: true };
+    //const usuarios = await Usuario.find(query)
+       // //.skip( Number( desde ) )
+        //.limit(Number( limite ));
+    
+    //const total = await Usuario.countDocuments(query);    
 
-const usuariosGet = (req, res = response) => {
+    const [ total, usuarios ] = await Promise.all([
+        Usuario.countDocuments(query),
+        Usuario.find(query)
+            .skip( Number( desde ) )
+            .limit(Number( limite ))
+    ]);
 
-    //const query = req.query; Con esto se hace que (http://localhost:8080/api/usuarios?q=hola&nombre=roly&apikey=1234567890) se muestre ordenado.
-   const { q, nombre = 'No name', apikey, page = "1", limit } = req.query;   // tambien se puede usar 1 en page
     res.json({
-        msg: 'get API - controlador',
-        q,
-        nombre,
-        apikey,
-        page,
-        limit
+        //resp
+        total,
+        usuarios
+    
+    //const query = req.query; Con esto se hace que (http://localhost:8080/api/usuarios?q=hola&nombre=roly&apikey=1234567890) se muestre ordenado.
+   //const { q, nombre = 'No name', apikey, page = "1", limit } = req.query;   // tambien se puede usar 1 en page
+        //msg: 'get API - controlador',
+        //q,
+        //nombre,
+        //apikey,
+        //page,
+        //limit
     });    
 }
 
@@ -41,14 +58,25 @@ const usuariosPost = async(req, res = response) => {
         //edad
     });    
 }
-const usuariosPut = (req, res = response) => {
+const usuariosPut = async(req, res = response) => {
 
-    const { usuarioid } = req.params;
+    const { id } = req.params;
+    const { _id, password, google, correo, ...resto } = req.body;
+
+    //TODO validad contra base de datos
+
+    if ( password ) {
+         // Encriptar la contraseña
+        const salt = bcryptjs.genSaltSync();
+        resto.password = bcryptjs.hashSync( password, salt );
+
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate( id, resto );
    
-    res.json({
-        msg: 'put API - usuariosPut',
-        usuarioid
-    });    
+    res.json(usuario);
+    
+        //msg: 'put API - usuariosPut', ejemplo
 }
 const usuariosPatch = (req, res = response) => {
    
@@ -56,11 +84,17 @@ const usuariosPatch = (req, res = response) => {
         msg: 'patch API - usuariosPatch'
     });    
 }
-const usuariosDelete = (req, res = response) => {
+const usuariosDelete = async(req, res = response) => {
+
+    const { id } = req.params;
+
+    // Fisicamente lo borarmos 
+    //const usuario = await Usuario.findByIdAndDelete( id );
+    const usuario = await Usuario.findByIdAndUpdate( id, { estado: false } );
+
    
-    res.json({
-        msg: 'delete API - usuariosDelete'
-    });    
+    res.json(usuario);    
+        //msg: 'delete API - usuariosDelete'
 }
 
 
